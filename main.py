@@ -1,8 +1,31 @@
 import pygame
+import constants
+from character import Character
 
 pygame.init()
 
-SCREEN_WITDTH = 800
-SCREEN_HIGHT = 600
 
-screen = pygame.display.set_mode((SCREEN_WITDTH, SCREEN_HIGHT))
+
+screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
+
+
+pygame.display.set_caption("Escape from Great Zimbabwe")
+
+#player or character
+
+player = Character(100, 100)
+#main Game loop
+
+run = True
+
+while run:
+
+    #draw player
+    player.draw(screen)
+
+    #event handler
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+pygame.quit()
