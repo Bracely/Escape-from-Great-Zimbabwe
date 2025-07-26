@@ -4,7 +4,7 @@ from character import Character
 
 pygame.init()
 
-
+#commented this 
 
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
 
