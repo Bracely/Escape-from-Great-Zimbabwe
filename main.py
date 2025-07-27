@@ -14,6 +14,7 @@ pygame.display.set_caption("Escape from Great Zimbabwe")
 #player or character
 
 player = Character(100, 100)
+#ah huh test
 #main Game loop
 
 run = True
