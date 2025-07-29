@@ -45,7 +45,7 @@ red_potion = scale_img(pygame.image.load("assets/images/items/potion_red.png").c
 
 #load character images
 mob_animations = []
-mob_types = ["munhu", "boar"]
+mob_types = ["munhu", "boar", "impala"]
 
 animation_types = ["idle", "run", "attack", "hurt", "dying"]
 for mob in mob_types:
@@ -56,10 +56,10 @@ for mob in mob_types:
     temp_list = []
     for i in range(4):
       img = pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha()
-      if mob == "boar":
-        img = scale_img(img, constants.BOAR_SCALE)
-      else:
+      if mob == "munhu":
         img = scale_img(img, constants.SCALE)
+      else:
+        img = scale_img(img, constants.BOAR_SCALE)
       temp_list.append(img)
     animation_list.append(temp_list)
   mob_animations.append(animation_list)
@@ -111,11 +111,13 @@ player = Character(100, 100, 100, mob_animations, 0)
 spear = Weapon(player)
 
 #create enemy
-enemy = Character(200, 300, 100, mob_animations, 1)
+enemy = Character(200, 300, 100, mob_animations, 1, True)
+impala = Character(400, 300, 100, mob_animations, 2)
 
 #create empty enemy list
 enemy_list = []
 enemy_list.append(enemy)
+enemy_list.append(impala)
 
 #create sprite groups
 damage_text_group = pygame.sprite.Group()
@@ -155,7 +157,7 @@ while run:
 
   #update player
   for enemy in enemy_list:
-    enemy.ai(player)
+    enemy.ai(player)  # pace is not used in this context, so passing None 
     enemy.update()
   player.update()
 

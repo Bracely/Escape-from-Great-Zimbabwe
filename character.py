@@ -4,7 +4,7 @@ import constants
 
 
 class Character:
-    def __init__(self, x, y, health, mob_animations, char_type):
+    def __init__(self, x, y, health, mob_animations, char_type, dangerous_enemy = False):
         self.char_type = char_type
         self.score = 0
         self.flip = False
@@ -21,6 +21,15 @@ class Character:
         self.hurt = False
         self.attack = False
         self.pooked = False
+        self.pacing = True
+        self.pace_direction = 1
+        self.pace_duration = 1000
+        self.pace_timer = pygame.time.get_ticks()
+        self.pacing_paused = False
+        self.pacing_pause_timer = 0
+        self.pacing_pause_duration = 1000
+        self.dangerous_enemy = dangerous_enemy
+
 
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pygame.Rect(0, 0, 40, 40)
@@ -54,35 +63,81 @@ class Character:
 
         #check distance to player
         dist = math.sqrt(((self.rect.centerx - player.rect.centerx)**2) + ((self.rect.centery - player.rect.centery)**2))
-        if not clipped_line and dist > constants.RANGE:
-            if self.rect.centerx > player.rect.centerx:
-                ai_dx = -constants.ENEMY_SPEED
-            if self.rect.centerx < player.rect.centerx:
-                ai_dx = constants.ENEMY_SPEED
-            if self.rect.centery > player.rect.centery:
-                ai_dy = -constants.ENEMY_SPEED
-            if self.rect.centery < player.rect.centery:
-                ai_dy = constants.ENEMY_SPEED
+
+        #follow player if within range for attack (this is for enemies that have attack)
+        if self.dangerous_enemy and self.pooked == True:
+            if not clipped_line and dist > constants.RANGE:
+                if self.rect.centerx > player.rect.centerx:
+                    ai_dx = -constants.ENEMY_SPEED
+                if self.rect.centerx < player.rect.centerx:
+                    ai_dx = constants.ENEMY_SPEED
+                if self.rect.centery > player.rect.centery:
+                    ai_dy = -constants.ENEMY_SPEED
+                if self.rect.centery < player.rect.centery:
+                    ai_dy = constants.ENEMY_SPEED
+
+        if not clipped_line and dist < constants.RANGE:
+                if self.rect.centerx > player.rect.centerx:
+                    ai_dx = constants.ENEMY_SPEED
+                if self.rect.centerx < player.rect.centerx:
+                    ai_dx = -constants.ENEMY_SPEED
+                if self.rect.centery > player.rect.centery:
+                    ai_dy = constants.ENEMY_SPEED
+                if self.rect.centery < player.rect.centery:
+                    ai_dy = -constants.ENEMY_SPEED
 
         if self.alive:
-
-            # #pacing
-            # self.move()
-
             if not self.stunned:
-            #move towards player
-                if player.health > 0 and self.pooked:
+                if not self.pooked:
+                    if dist <= constants.RANGE:
+                        if self.rect.centerx > player.rect.centerx:
+                            ai_dx = -constants.ENEMY_PACE
+                        elif self.rect.centerx < player.rect.centerx:
+                            ai_dx = constants.ENEMY_PACE
+                        if self.rect.centery > player.rect.centery:
+                            ai_dy = -constants.ENEMY_PACE
+                        elif self.rect.centery < player.rect.centery:
+                            ai_dy = constants.ENEMY_PACE
+                        
+                        self.move(ai_dx, ai_dy)
+                    # else:
+                    #     if pygame.time.get_ticks() - self.pace_timer > self.pace_duration:
+                    #         if not self.pacing_paused:
+                    #             if pygame.time.get_ticks() - self.pace_timer > self.pace_duration:
+                    #                 self.pacing_paused = True
+                    #                 self.pacing_pause_timer = pygame.time.get_ticks()
+                    #                 ai_dx = 0
+                    #                 ai_dy = 0
+                    #             else:
+                    #                 ai_dx = self.pace_direction * constants.ENEMY_PACE
+                    #                 ai_dy = 0
+                    #                 self.move(ai_dx, ai_dy)
+                    #         else:
+                    #               if pygame.time.get_ticks() - self.pacing_pause_timer > self.pacing_pause_duration:
+                    #                 self.pace_direction *= -1
+                    #                 self.pace_timer = pygame.time.get_ticks()
+                    #                 self.pacing_paused = False
+
+                        self.pace_direction *= -1
+                        self.pace_timer = pygame.time.get_ticks()
+                    ai_dx = self.pace_direction * constants.ENEMY_PACE
+                    ai_dy = 0
                     self.move(ai_dx, ai_dy)
-                #attack player
-                if dist < constants.ATTACK_RANGE and player.hit == False and player.health > 0 and not self.hurt:
-                    player.health -= 10
-                    player.hurt = True
-                    player.hit = True
-                    self.attack = True
-                    player.last_hit = pygame.time.get_ticks()
-                if  player.health == 0:
-                    self.attack = False
-                    self.running = False
+                else: 
+            #move towards player
+                    if player.health > 0:
+                        self.move(ai_dx, ai_dy)
+                    #attack player
+                    if dist < constants.ATTACK_RANGE and player.hit == False and player.health > 0 and not self.hurt and self.pooked and self.dangerous_enemy:
+                        player.health -= 10
+                        player.hurt = True
+                        player.hit = True
+                        self.attack = True
+                        player.last_hit = pygame.time.get_ticks()
+                    if  player.health == 0:
+                        self.attack = False
+                        self.running = False
+                        self.update_action(4)
 
 
             #check if hit
