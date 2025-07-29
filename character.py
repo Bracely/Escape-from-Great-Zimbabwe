@@ -20,6 +20,7 @@ class Character:
         self.stunned = False
         self.hurt = False
         self.attack = False
+        self.pooked = False
 
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pygame.Rect(0, 0, 40, 40)
@@ -64,12 +65,16 @@ class Character:
                 ai_dy = constants.ENEMY_SPEED
 
         if self.alive:
+
+            # #pacing
+            # self.move()
+
             if not self.stunned:
             #move towards player
-                if player.health > 0:
+                if player.health > 0 and self.pooked:
                     self.move(ai_dx, ai_dy)
                 #attack player
-                if dist < constants.ATTACK_RANGE and player.hit == False:
+                if dist < constants.ATTACK_RANGE and player.hit == False and player.health > 0 and not self.hurt:
                     player.health -= 10
                     player.hurt = True
                     player.hit = True
@@ -81,6 +86,7 @@ class Character:
 
 
             #check if hit
+            hit_cooldown = 1000
             if self.hit:
                 self.hit = False
                 self.last_hit = pygame.time.get_ticks()
@@ -90,6 +96,10 @@ class Character:
 
             if (pygame.time.get_ticks() - self.last_hit > stun_cooldown):
                 self.stunned = False
+
+            # if self.char_type == 1:
+            #     if self.hit == True and pygame.time.get_ticks() - self.last_hit > hit_cooldown:
+            #         self.hurt = False
 
 
     def update(self):
@@ -131,6 +141,7 @@ class Character:
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             if self.action == 4 and self.frame_index == 3:
                 self.frame_index = 3
+
             else:
                 self.frame_index += 1
                 self.update_time = pygame.time.get_ticks()

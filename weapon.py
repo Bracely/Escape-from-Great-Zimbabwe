@@ -19,6 +19,8 @@ class Weapon:
           damage = 10 + random.randint(-5, 5)
           damage_pos = enemy.rect
           enemy.health -= damage
+          enemy.pooked = True
+          # enemy.hurt = True
           enemy.hit = True
           self.used = True
           self.last_used = pygame.time.get_ticks()  # reseting the timer
