@@ -43,9 +43,12 @@ for x in range(4):
 #load potion image
 red_potion = scale_img(pygame.image.load("assets/images/items/potion_red.png").convert_alpha(), constants.POTION_SCALE)
 
+#load spear image
+spear_img = scale_img(pygame.image.load("assets/images/weapons/spear.png").convert_alpha(), constants.WEAPON_SCALE)
+
 #load character images
 mob_animations = []
-mob_types = ["munhu", "boar"]
+mob_types = ["munhu", "boar", "impala"]
 
 animation_types = ["idle", "run", "attack", "hurt", "dying"]
 for mob in mob_types:
@@ -56,10 +59,10 @@ for mob in mob_types:
     temp_list = []
     for i in range(4):
       img = pygame.image.load(f"assets/images/characters/{mob}/{animation}/{i}.png").convert_alpha()
-      if mob == "boar":
-        img = scale_img(img, constants.BOAR_SCALE)
-      else:
+      if mob == "munhu":
         img = scale_img(img, constants.SCALE)
+      else:
+        img = scale_img(img, constants.BOAR_SCALE)
       temp_list.append(img)
     animation_list.append(temp_list)
   mob_animations.append(animation_list)
@@ -108,14 +111,16 @@ class DamageText(pygame.sprite.Sprite):
 player = Character(100, 100, 100, mob_animations, 0)
 
 #create players weapon instance
-spear = Weapon(player)
+spear = Weapon(spear_img)
 
 #create enemy
-enemy = Character(200, 300, 100, mob_animations, 1)
+enemy = Character(200, 300, 100, mob_animations, 1, True)
+impala = Character(400, 300, 100, mob_animations, 2)
 
 #create empty enemy list
 enemy_list = []
 enemy_list.append(enemy)
+enemy_list.append(impala)
 
 #create sprite groups
 damage_text_group = pygame.sprite.Group()
@@ -128,6 +133,7 @@ potion = Item(200, 200, 1, [red_potion])
 item_group.add(potion)
 coin = Item(400, 400, 0, coin_images)
 item_group.add(coin)
+animation_done = False
 
 #main game loop
 run = True
@@ -151,14 +157,18 @@ while run:
     dy = constants.SPEED
 
   #move player
-  player.move(dx, dy)
+  if player.alive:
+    player.move(dx, dy)
 
   #update player
   for enemy in enemy_list:
-    enemy.ai(player)
+    enemy.ai(player) #enemy_alive = enemy.ai(player)
+    # if not enemy_alive and animation_done:
+    #   enemy_list.remove(enemy)
+      #add meat item here, dissappeared when pick like the coin... (lowkey just replace the coin)
     enemy.update()
-  player.update()
-
+  player.update() # animation_done =player.update()
+  spear.update(player, enemy_list)
   damage, damage_pos = spear.update(player,enemy_list)
   if damage:
     damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
@@ -171,6 +181,7 @@ while run:
   for enemy in enemy_list:
     enemy.draw(screen)
   player.draw(screen)
+  #spear.draw(screen, player)
   damage_text_group.draw(screen)
   item_group.draw(screen)
   draw_info()
@@ -203,8 +214,6 @@ while run:
         moving_up = False
       if event.key == pygame.K_s:
         moving_down = False
-      if event.key == pygame.K_SPACE:
-        player.attack = False
 
   pygame.display.update()
 
